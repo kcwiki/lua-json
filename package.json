@@ -1,6 +1,6 @@
 {
   "name": "lua-json",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convert Lua tables to and from JSON",
   "keywords": [
     "json",

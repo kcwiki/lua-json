@@ -1,9 +1,6 @@
 # `lua-json`
 
 [![Version](https://img.shields.io/npm/v/lua-json.svg)](https://www.npmjs.com/package/lua-json)
-[![Build](https://img.shields.io/travis/kcwiki/lua-json.svg)](https://travis-ci.org/kcwiki/lua-json)
-[![Dependencies](https://img.shields.io/david/kcwiki/lua-json.svg)](https://david-dm.org/kcwiki/lua-json)
-[![Dev Dependencies](https://img.shields.io/david/dev/kcwiki/lua-json.svg)](https://david-dm.org/kcwiki/lua-json?type=dev)
 
 Convert Lua tables to and from JSON.
 

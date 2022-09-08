@@ -3,7 +3,10 @@ const { parse: parseLua } = require('luaparse')
 
 const formatLuaString = (string, singleQuote) => (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
 
-const formatLuaKey = (string, singleQuote) => (string.match(/^[a-zA-Z_][a-zA-Z_0-9]*$/) ? string : `[${formatLuaString(string, singleQuote)}]`)
+const valueKeys = { false: 'false', true: 'true', null: 'nil' }
+
+const formatLuaKey = (string, singleQuote) =>
+  valueKeys[string] ? `[${valueKeys[string]}]` : string.match(/^[a-zA-Z_][a-zA-Z_0-9]*$/) ? string : `[${formatLuaString(string, singleQuote)}]`
 
 const format = (value, options = { eol: '\n', singleQuote: true, spaces: 2 }) => {
   options = options || {}

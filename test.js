@@ -77,3 +77,12 @@ jsonDoubleQuote._object2 = mapKeys(jsonDoubleQuote._object2, (_, key) => key.rep
 const luaDoubleQuote = lua.replace(/'/g, '"')
 equal(format(jsonDoubleQuote, { singleQuote: false }), luaDoubleQuote)
 deepEqual(parse(luaDoubleQuote), jsonDoubleQuote)
+
+const jsonUndefinedValue = {
+  _undefined: undefined,
+  _string: 'string',
+}
+const luaUndefinedValue = `return {
+  _string = 'string',
+}`
+equal(format(jsonUndefinedValue), luaUndefinedValue)

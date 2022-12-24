@@ -1,4 +1,4 @@
-const { isNull, isBoolean, isNumber, isString, isArray, isObject, isEmpty, fromPairs, keys, map, repeat } = require('lodash')
+const { isNull, isBoolean, isNumber, isString, isArray, isObject, isUndefined, isEmpty, fromPairs, keys, map, repeat } = require('lodash')
 const { parse: parseLua } = require('luaparse')
 
 const formatLuaString = (string, singleQuote) => (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
@@ -36,24 +36,35 @@ const format = (value, options = { eol: '\n', singleQuote: true, spaces: 2 }) =>
       return `{${value.map(e => `${rec(e, i + 1)},`).join('')}}`
     }
     if (isObject(value)) {
+      let converted
       if (isEmpty(value)) {
         return '{}'
       }
       if (options.spaces) {
         const spaces = isNumber(options.spaces) ? repeat(' ', options.spaces * (i + 1)) : repeat(options.spaces, i + 1)
         const spacesEnd = isNumber(options.spaces) ? repeat(' ', options.spaces * i) : repeat(options.spaces, i)
-        return `{${eol}${keys(value)
-          .map(key => `${spaces}${formatLuaKey(key, options.singleQuote)} = ${rec(value[key], i + 1)},`)
-          .join(eol)}${eol}${spacesEnd}}`
+        converted = `{${eol}${keys(value)
+          .map(key => (isUndefined(value[key]) ? undefined : `${spaces}${formatLuaKey(key, options.singleQuote)} = ${rec(value[key], i + 1)},`))
+          .join(eol)}${eol}${spacesEnd}}`.replace('\n\n', '\n')
+        return stripMultiLines(converted)
       }
-      return `{${keys(value)
-        .map(key => `${formatLuaKey(key, options.singleQuote)}=${rec(value[key], i + 1)},`)
-        .join('')}}`
+      converted = `{${keys(value)
+        .map(key => (isUndefined(value[key]) ? undefined : `${formatLuaKey(key, options.singleQuote)}=${rec(value[key], i + 1)},`))
+        .join('')}}`.replace('\n\n', '\n')
+      return stripMultiLines(converted)
     }
     throw new Error(`can't format ${typeof value}`)
   }
 
   return `return${options.spaces ? ' ' : ''}${rec(value)}`
+}
+
+const stripMultiLines = str => {
+  let stripped = str
+  do {
+    stripped = stripped.replace('\n\n', '\n')
+  } while (stripped.match('\n\n'))
+  return stripped
 }
 
 const luaAstToJson = ast => {

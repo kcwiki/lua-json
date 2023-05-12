@@ -1,12 +1,36 @@
 const { isNull, isBoolean, isNumber, isString, isArray, isObject, isEmpty, fromPairs, keys, map, repeat } = require('lodash')
 const { parse: parseLua } = require('luaparse')
 
+/**
+ * @link https://github.com/fstirlitz/luaparse/blob/0f525b152516bc8afa34564de2423b039aa83bc1/luaparse.js#L1414
+ * @param {string} id 
+ * @returns {boolean}
+ */
+function isKeyword(id) {
+  switch (id.length) {
+    case 2:
+      return 'do' === id || 'if' === id || 'in' === id || 'or' === id;
+    case 3:
+      return 'and' === id || 'end' === id || 'for' === id || 'not' === id;
+    case 4:
+      // TODO: configure labels "goto"
+      return 'else' === id || 'then' === id || 'goto' === id;
+    case 5:
+      return 'break' === id || 'local' === id || 'until' === id || 'while' === id;
+    case 6:
+      return 'elseif' === id || 'repeat' === id || 'return' === id;
+    case 8:
+      return 'function' === id;
+  }
+  return false;
+}
+
 const formatLuaString = (string, singleQuote) => (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
 
 const valueKeys = { false: 'false', true: 'true', null: 'nil' }
 
 const formatLuaKey = (string, singleQuote) =>
-  valueKeys[string] ? `[${valueKeys[string]}]` : string.match(/^[a-zA-Z_][a-zA-Z_0-9]*$/) ? string : `[${formatLuaString(string, singleQuote)}]`
+  valueKeys[string] ? `[${valueKeys[string]}]` : (string.match(/^[a-zA-Z_][a-zA-Z_0-9]*$/) && !isKeyword(string)) ? string : `[${formatLuaString(string, singleQuote)}]`
 
 const format = (value, options = { eol: '\n', singleQuote: true, spaces: 2 }) => {
   options = options || {}

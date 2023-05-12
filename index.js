@@ -25,9 +25,15 @@ function isKeyword(id) {
   return false;
 }
 
-const formatLuaString = (string, singleQuote) => {
+const formatLuaString = (string, singleQuote, multilineString) => {
   string = string.replace(/\\/g, "\\\\")
-  return (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
+  if (multilineString) {
+    if(string.includes("]]")) throw new SyntaxError("Multiline string can't include ']]'.") // TODO: provide more information about the error
+    return `[[${string}]]`
+  } else {
+    string = string.replace(/\n/g, "\\n")
+    return (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
+  }
 }
 
 const valueKeys = { false: 'false', true: 'true', null: 'nil' }
@@ -35,7 +41,7 @@ const valueKeys = { false: 'false', true: 'true', null: 'nil' }
 const formatLuaKey = (string, singleQuote) =>
   valueKeys[string] ? `[${valueKeys[string]}]` : (string.match(/^[a-zA-Z_][a-zA-Z_0-9]*$/) && !isKeyword(string)) ? string : `[${formatLuaString(string, singleQuote)}]`
 
-const format = (value, options = { eol: '\n', singleQuote: true, spaces: 2 }) => {
+const format = (value, options = { eol: '\n', singleQuote: true, multilineString: false, spaces: 2 }) => {
   options = options || {}
   const eol = (options.eol = isString(options.eol) ? options.eol : '\n')
   options.singleQuote = isBoolean(options.singleQuote) ? options.singleQuote : true
@@ -49,7 +55,7 @@ const format = (value, options = { eol: '\n', singleQuote: true, spaces: 2 }) =>
       return value.toString()
     }
     if (isString(value)) {
-      return formatLuaString(value, options.singleQuote)
+      return formatLuaString(value, options.singleQuote, options.multilineString)
     }
     if (isArray(value)) {
       if (isEmpty(value)) {
@@ -70,11 +76,11 @@ const format = (value, options = { eol: '\n', singleQuote: true, spaces: 2 }) =>
         const spaces = isNumber(options.spaces) ? repeat(' ', options.spaces * (i + 1)) : repeat(options.spaces, i + 1)
         const spacesEnd = isNumber(options.spaces) ? repeat(' ', options.spaces * i) : repeat(options.spaces, i)
         return `{${eol}${keys(value)
-          .map(key => `${spaces}${formatLuaKey(key, options.singleQuote)} = ${rec(value[key], i + 1)},`)
+          .map(key => `${spaces}${formatLuaKey(key, options.singleQuote, false)} = ${rec(value[key], i + 1)},`)
           .join(eol)}${eol}${spacesEnd}}`
       }
       return `{${keys(value)
-        .map(key => `${formatLuaKey(key, options.singleQuote)}=${rec(value[key], i + 1)},`)
+        .map(key => `${formatLuaKey(key, options.singleQuote, false)}=${rec(value[key], i + 1)},`)
         .join('')}}`
     }
     throw new Error(`can't format ${typeof value}`)

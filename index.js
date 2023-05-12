@@ -25,7 +25,10 @@ function isKeyword(id) {
   return false;
 }
 
-const formatLuaString = (string, singleQuote) => (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
+const formatLuaString = (string, singleQuote) => {
+  string = string.replace(/\\/g, "\\\\")
+  return (singleQuote ? `'${string.replace(/'/g, "\\'")}'` : `"${string.replace(/"/g, '\\"')}"`)
+}
 
 const valueKeys = { false: 'false', true: 'true', null: 'nil' }
 
